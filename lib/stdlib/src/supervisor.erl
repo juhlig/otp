@@ -19,6 +19,7 @@
 %%
 -module(supervisor).
 
+%test
 -behaviour(gen_server).
 
 %% External exports
