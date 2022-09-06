@@ -181,8 +181,6 @@ mime_decode_to_string(List, Mode) when is_list(List) ->
 %% Skipping pad character if not at end of string. Also liberal about
 %% excess padding and skipping of other illegal (non-base64 alphabet)
 %% characters. See section 3.3 of RFC4648
-mime_decode_list(ModeOffset, [0 | Cs], A) ->
-    mime_decode_list(ModeOffset, Cs, A);
 mime_decode_list(ModeOffset, [C1 | Cs], A) ->
     case b64d(C1, ModeOffset) of
         B1 when is_integer(B1) -> mime_decode_list(ModeOffset, Cs, A, B1);
@@ -191,8 +189,6 @@ mime_decode_list(ModeOffset, [C1 | Cs], A) ->
 mime_decode_list(_ModeOffset, [], A) ->
     A.
 
-mime_decode_list(ModeOffset, [0 | Cs], A, B1) ->
-    mime_decode_list(ModeOffset, Cs, A, B1);
 mime_decode_list(ModeOffset, [C2 | Cs], A, B1) ->
     case b64d(C2, ModeOffset) of
         B2 when is_integer(B2) ->
@@ -200,8 +196,6 @@ mime_decode_list(ModeOffset, [C2 | Cs], A, B1) ->
         _ -> mime_decode_list(ModeOffset, Cs, A, B1) % eq is padding
     end.
 
-mime_decode_list(ModeOffset, [0 | Cs], A, B1, B2) ->
-    mime_decode_list(ModeOffset, Cs, A, B1, B2);
 mime_decode_list(ModeOffset, [C3 | Cs], A, B1, B2) ->
     case b64d(C3, ModeOffset) of
         B3 when is_integer(B3) ->
@@ -211,8 +205,6 @@ mime_decode_list(ModeOffset, [C3 | Cs], A, B1, B2) ->
         _ -> mime_decode_list(ModeOffset, Cs, A, B1, B2)
     end.
 
-mime_decode_list(ModeOffset, [0 | Cs], A, B1, B2, B3) ->
-    mime_decode_list(ModeOffset, Cs, A, B1, B2, B3);
 mime_decode_list(ModeOffset, [C4 | Cs], A, B1, B2, B3) ->
     case b64d(C4, ModeOffset) of
         B4 when is_integer(B4) ->
@@ -222,8 +214,6 @@ mime_decode_list(ModeOffset, [C4 | Cs], A, B1, B2, B3) ->
         _ -> mime_decode_list(ModeOffset, Cs, A, B1, B2, B3)
     end.
 
-mime_decode_list_after_eq(ModeOffset, [0 | Cs], A, B1, B2, B3) ->
-    mime_decode_list_after_eq(ModeOffset, Cs, A, B1, B2, B3);
 mime_decode_list_after_eq(ModeOffset, [C | Cs], A, B1, B2, B3) ->
     case b64d(C, ModeOffset) of
         B when is_integer(B) ->
@@ -239,8 +229,6 @@ mime_decode_list_after_eq(_ModeOffset, [], A, B1, B2, eq) ->
 mime_decode_list_after_eq(_ModeOffset, [], A, B1, B2, B3) ->
     <<A/bits,B1:6,B2:6,(B3 bsr 2):4>>.
 
-mime_decode_binary(ModeOffset, <<0:8, Cs/bits>>, A) ->
-    mime_decode_binary(ModeOffset, Cs, A);
 mime_decode_binary(ModeOffset, <<C1:8, Cs/bits>>, A) ->
     case b64d(C1, ModeOffset) of
         B1 when is_integer(B1) -> mime_decode_binary(ModeOffset, Cs, A, B1);
@@ -249,8 +237,6 @@ mime_decode_binary(ModeOffset, <<C1:8, Cs/bits>>, A) ->
 mime_decode_binary(_ModeOffset, <<>>, A) ->
     A.
 
-mime_decode_binary(ModeOffset, <<0:8, Cs/bits>>, A, B1) ->
-    mime_decode_binary(ModeOffset, Cs, A, B1);
 mime_decode_binary(ModeOffset, <<C2:8, Cs/bits>>, A, B1) ->
     case b64d(C2, ModeOffset) of
         B2 when is_integer(B2) ->
@@ -258,8 +244,6 @@ mime_decode_binary(ModeOffset, <<C2:8, Cs/bits>>, A, B1) ->
         _ -> mime_decode_binary(ModeOffset, Cs, A, B1) % eq is padding
     end.
 
-mime_decode_binary(ModeOffset, <<0:8, Cs/bits>>, A, B1, B2) ->
-    mime_decode_binary(ModeOffset, Cs, A, B1, B2);
 mime_decode_binary(ModeOffset, <<C3:8, Cs/bits>>, A, B1, B2) ->
     case b64d(C3, ModeOffset) of
         B3 when is_integer(B3) ->
@@ -269,8 +253,6 @@ mime_decode_binary(ModeOffset, <<C3:8, Cs/bits>>, A, B1, B2) ->
         _ -> mime_decode_binary(ModeOffset, Cs, A, B1, B2)
     end.
 
-mime_decode_binary(ModeOffset, <<0:8, Cs/bits>>, A, B1, B2, B3) ->
-    mime_decode_binary(ModeOffset, Cs, A, B1, B2, B3);
 mime_decode_binary(ModeOffset, <<C4:8, Cs/bits>>, A, B1, B2, B3) ->
     case b64d(C4, ModeOffset) of
         B4 when is_integer(B4) ->
@@ -280,8 +262,6 @@ mime_decode_binary(ModeOffset, <<C4:8, Cs/bits>>, A, B1, B2, B3) ->
         _ -> mime_decode_binary(ModeOffset, Cs, A, B1, B2, B3)
     end.
 
-mime_decode_binary_after_eq(ModeOffset, <<0:8, Cs/bits>>, A, B1, B2, B3) ->
-    mime_decode_binary_after_eq(ModeOffset, Cs, A, B1, B2, B3);
 mime_decode_binary_after_eq(ModeOffset, <<C:8, Cs/bits>>, A, B1, B2, B3) ->
     case b64d(C, ModeOffset) of
         B when is_integer(B) ->
@@ -297,8 +277,6 @@ mime_decode_binary_after_eq(_ModeOffset, <<>>, A, B1, B2, eq) ->
 mime_decode_binary_after_eq(_ModeOffset, <<>>, A, B1, B2, B3) ->
     <<A/bits,B1:6,B2:6,(B3 bsr 2):4>>.
 
-mime_decode_list_to_string(ModeOffset, [0 | Cs]) ->
-    mime_decode_list_to_string(ModeOffset, Cs);
 mime_decode_list_to_string(ModeOffset, [C1 | Cs]) ->
     case b64d(C1, ModeOffset) of
         B1 when is_integer(B1) -> mime_decode_list_to_string(ModeOffset, Cs, B1);
@@ -307,8 +285,6 @@ mime_decode_list_to_string(ModeOffset, [C1 | Cs]) ->
 mime_decode_list_to_string(_ModeOffset, []) ->
     [].
 
-mime_decode_list_to_string(ModeOffset, [0 | Cs], B1) ->
-    mime_decode_list_to_string(ModeOffset, Cs, B1);
 mime_decode_list_to_string(ModeOffset, [C2 | Cs], B1) ->
     case b64d(C2, ModeOffset) of
         B2 when is_integer(B2) ->
@@ -316,8 +292,6 @@ mime_decode_list_to_string(ModeOffset, [C2 | Cs], B1) ->
         _ -> mime_decode_list_to_string(ModeOffset, Cs, B1) % eq is padding
     end.
 
-mime_decode_list_to_string(ModeOffset, [0 | Cs], B1, B2) ->
-    mime_decode_list_to_string(ModeOffset, Cs, B1, B2);
 mime_decode_list_to_string(ModeOffset, [C3 | Cs], B1, B2) ->
     case b64d(C3, ModeOffset) of
         B3 when is_integer(B3) ->
@@ -326,8 +300,6 @@ mime_decode_list_to_string(ModeOffset, [C3 | Cs], B1, B2) ->
         _ -> mime_decode_list_to_string(ModeOffset, Cs, B1, B2)
     end.
 
-mime_decode_list_to_string(ModeOffset, [0 | Cs], B1, B2, B3) ->
-    mime_decode_list_to_string(ModeOffset, Cs, B1, B2, B3);
 mime_decode_list_to_string(ModeOffset, [C4 | Cs], B1, B2, B3) ->
     case b64d(C4, ModeOffset) of
         B4 when is_integer(B4) ->
@@ -341,8 +313,6 @@ mime_decode_list_to_string(ModeOffset, [C4 | Cs], B1, B2, B3) ->
         _ -> mime_decode_list_to_string(ModeOffset, Cs, B1, B2, B3)
     end.
 
-mime_decode_list_to_string_after_eq(ModeOffset, [0 | Cs], B1, B2, B3) ->
-    mime_decode_list_to_string_after_eq(ModeOffset, Cs, B1, B2, B3);
 mime_decode_list_to_string_after_eq(ModeOffset, [C | Cs], B1, B2, B3) ->
     case b64d(C, ModeOffset) of
         B when is_integer(B) ->
@@ -518,16 +488,17 @@ only_ws(ModeOffset, [C | Cs], A) ->
 
 %% accessors 
 
-get_decoding_offset(standard) -> 0;
-get_decoding_offset(urlsafe) -> 255;
-get_decoding_offset(undefined) -> 510.
+get_decoding_offset(standard) -> 1;
+get_decoding_offset(urlsafe) -> 257;
+get_decoding_offset(undefined) -> 513.
 
 -compile({inline, [{b64d, 2}]}).
 %% One-based decode map.
 b64d(X, Off) ->
     element(X + Off,
-            {% standard base64 alphabet (RFC 4648 Section 4)
-	     bad,bad,bad,bad,bad,bad,bad,bad,ws,ws,bad,bad,ws,bad,bad, %1-15
+            {
+	     %% standard base64 alphabet (RFC 4648 Section 4)
+	     bad,bad,bad,bad,bad,bad,bad,bad,bad,ws,ws,bad,bad,ws,bad,bad, %0-15
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad, %16-31
              ws,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,62,bad,bad,bad,63, %32-47
              52,53,54,55,56,57,58,59,60,61,bad,bad,bad,eq,bad,bad, %48-61
@@ -544,8 +515,8 @@ b64d(X, Off) ->
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,
 
-	     % alternative base64url alphabet (RFC 4648 Section 5)
-             bad,bad,bad,bad,bad,bad,bad,bad,ws,ws,bad,bad,ws,bad,bad, %1-15
+	     %% alternative base64url alphabet (RFC 4648 Section 5)
+             bad,bad,bad,bad,bad,bad,bad,bad,bad,ws,ws,bad,bad,ws,bad,bad, %0-15
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad, %16-31
              ws,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,62,bad,bad, %32-47
              52,53,54,55,56,57,58,59,60,61,bad,bad,bad,eq,bad,bad, %48-61
@@ -562,8 +533,8 @@ b64d(X, Off) ->
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,
 
-	     % mixed base64 / base64url alphabet
-             bad,bad,bad,bad,bad,bad,bad,bad,ws,ws,bad,bad,ws,bad,bad, %1-15
+	     %% mixed base64 / base64url alphabet
+             bad,bad,bad,bad,bad,bad,bad,bad,bad,ws,ws,bad,bad,ws,bad,bad, %0-15
              bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad, %16-31
              ws,bad,bad,bad,bad,bad,bad,bad,bad,bad,bad,62,bad,62,bad,63, %32-47
              52,53,54,55,56,57,58,59,60,61,bad,bad,bad,eq,bad,bad, %48-61
@@ -586,16 +557,18 @@ get_encoding_offset(urlsafe) -> 65.
 -compile({inline, [{b64e, 2}]}).
 b64e(X, Off) ->
     element(X + Off,
-	    {% standard base64 alphabet (RFC 4648 Section 4)
+	    {
+	     %% standard base64 alphabet (RFC 4648 Section 4)
 	     $A, $B, $C, $D, $E, $F, $G, $H, $I, $J, $K, $L, $M, $N,
 	     $O, $P, $Q, $R, $S, $T, $U, $V, $W, $X, $Y, $Z,
 	     $a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n,
 	     $o, $p, $q, $r, $s, $t, $u, $v, $w, $x, $y, $z,
 	     $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $+, $/,
 
-	     % alternative base64url alphabet (RFC 4648 Section 5)
+	     %% alternative base64url alphabet (RFC 4648 Section 5)
 	     $A, $B, $C, $D, $E, $F, $G, $H, $I, $J, $K, $L, $M, $N,
 	     $O, $P, $Q, $R, $S, $T, $U, $V, $W, $X, $Y, $Z,
 	     $a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n,
 	     $o, $p, $q, $r, $s, $t, $u, $v, $w, $x, $y, $z,
 	     $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $-, $_}).
+
