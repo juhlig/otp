@@ -29,7 +29,11 @@
 	 mime_decode_to_string/1, mime_decode_to_string/2]).
 
 %% RFC 4648: Base 64 Encoding alphabet
--type base64_alphabet() :: $A..$Z | $a..$z | $0..$9 | $+ | $/ | $=.
+-type base64_alphabet() :: $A..$Z | $a..$z | $0..$9 | $+ | $/ | $- | $_ | $=.
+
+%% Selector for the Base 64 alphabet, `standard'  for RFC 4648
+%% Section 4, `urlsafe'  for RFC 4648 Section 5.
+-type base64_mode() :: 'standard' | 'urlsafe'.
 
 %% The following type is a subtype of string() for return values
 %% of encoding functions.
@@ -46,6 +50,11 @@
 encode_to_string(Data) ->
     encode_to_string(Data, standard).
 
+-spec encode_to_string(Data, Mode) -> Base64String when
+      Data :: byte_string() | binary(),
+      Mode :: base64_mode(),
+      Base64String :: base64_string().
+
 encode_to_string(Bin, Mode) when is_binary(Bin) ->
     encode_to_string(binary_to_list(Bin), Mode);
 encode_to_string(List, Mode) when is_list(List) ->
@@ -57,6 +66,11 @@ encode_to_string(List, Mode) when is_list(List) ->
 
 encode(Data) ->
     encode(Data, standard).
+
+-spec encode(Data, Mode) -> Base64 when
+      Data :: byte_string() | binary(),
+      Mode :: base64_mode(),
+      Base64 :: base64_binary().
 
 encode(Bin, Mode) when is_binary(Bin) ->
     encode_binary(get_encoding_offset(Mode), Bin, <<>>);
@@ -130,8 +144,13 @@ encode_list(ModeOffset, [B1,B2,B3|Ls], A) ->
       Base64 :: base64_string() | base64_binary(),
       Data :: binary().
 
-decode(Data) ->
-    decode(Data, standard).
+decode(Base64) ->
+    decode(Base64, standard).
+
+-spec decode(Base64, Mode) -> Data when
+      Base64 :: base64_string() | base64_binary(),
+      Mode :: base64_mode() | 'undefined',
+      Data :: binary().
 
 decode(Bin, Mode) when is_binary(Bin) ->
     decode_binary(get_decoding_offset(Mode), Bin, <<>>);
@@ -142,8 +161,13 @@ decode(List, Mode) when is_list(List) ->
       Base64 :: base64_string() | base64_binary(),
       Data :: binary().
 
-mime_decode(Data) ->
-    mime_decode(Data, standard).
+mime_decode(Base64) ->
+    mime_decode(Base64, standard).
+
+-spec mime_decode(Base64, Mode) -> Data when
+      Base64 :: base64_string() | base64_binary(),
+      Mode :: base64_mode() | 'undefined',
+      Data :: binary().
 
 mime_decode(Bin, Mode) when is_binary(Bin) ->
     mime_decode_binary(get_decoding_offset(Mode), Bin, <<>>);
@@ -158,8 +182,13 @@ mime_decode(List, Mode) when is_list(List) ->
       Base64 :: base64_string() | base64_binary(),
       DataString :: byte_string().
 
-decode_to_string(Data) ->
-    decode_to_string(Data, standard).
+decode_to_string(Base64) ->
+    decode_to_string(Base64, standard).
+
+-spec decode_to_string(Base64, Mode) -> DataString when
+      Base64 :: base64_string() | base64_binary(),
+      Mode :: base64_mode() | ' undefined',
+      DataString :: byte_string().
 
 decode_to_string(Bin, Mode) when is_binary(Bin) ->
     decode_to_string(binary_to_list(Bin), Mode);
@@ -170,8 +199,13 @@ decode_to_string(List, Mode) when is_list(List) ->
       Base64 :: base64_string() | base64_binary(),
       DataString :: byte_string().
 
-mime_decode_to_string(Data) ->
-    mime_decode_to_string(Data, standard).
+mime_decode_to_string(Base64) ->
+    mime_decode_to_string(Base64, standard).
+
+-spec mime_decode_to_string(Base64, Mode) -> DataString when
+      Base64 :: base64_string() | base64_binary(),
+      Mode :: base64_mode() | ' undefined',
+      DataString :: byte_string().
 
 mime_decode_to_string(Bin, Mode) when is_binary(Bin) ->
     mime_decode_to_string(binary_to_list(Bin), Mode);
