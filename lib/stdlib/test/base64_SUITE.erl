@@ -28,10 +28,9 @@
 %% Test cases must be exported.
 -export([base64_encode/1, base64_encode_modes/1,
 	 base64_decode/1, base64_decode_modes/1,
-	 base64_otp_5635/1, base64_otp_6279/1,
-	 big/1, illegal/1,
-	 mime_decode/1,
-	 mime_decode_to_string/1,
+	 base64_otp_5635/1, base64_otp_6279/1, big/1, illegal/1,
+	 mime_decode/1, mime_decode_modes/1,
+	 mime_decode_to_string/1, mime_decode_to_string_modes/1,
 	 roundtrip_1/1, roundtrip_2/1, roundtrip_3/1, roundtrip_4/1]).
 
 %%-------------------------------------------------------------------------
@@ -43,9 +42,11 @@ suite() ->
      {timetrap,{minutes,4}}].
 
 all() ->
-    [base64_encode, base64_encode_modes, base64_decode, base64_decode_modes,
-     base64_otp_5635, base64_otp_6279, big, illegal, mime_decode,
-     mime_decode_to_string,
+    [base64_encode, base64_encode_modes,
+     base64_decode, base64_decode_modes,
+     base64_otp_5635, base64_otp_6279, big, illegal,
+     mime_decode, mime_decode_modes,
+     mime_decode_to_string, mime_decode_to_string_modes,
      {group, roundtrip}].
 
 groups() ->
@@ -209,6 +210,35 @@ mime_decode(Config) when is_list(Config) ->
     <<"o">>   = MimeDecode(<<"bw=\000=">>),
     ok.
 
+%% Test base64:mime_decode/2.
+mime_decode_modes(Config) when is_list(Config) ->
+    MimeDecode = fun (In, Mode) ->
+                                Out = base64:mime_decode(In, Mode),
+                                Out = base64:mime_decode(binary_to_list(In), Mode)
+                 end,
+
+    %% The following all decode to the same data.
+    Data = <<23, 234, 63, 163, 239, 129, 253, 175, 171>>,
+    Data = MimeDecode(<<"F+o/o++B/a+r">>, standard),
+    Data = MimeDecode(<<"F-o_o--B_a-r">>, urlsafe),
+    Data = MimeDecode(<<"F-o_o+-B/a-r">>, undefined),
+
+    %% The follwoing decode to different data depending on mode.
+    Base64 = <<"AB+C+D/E/FG-H-I_J_KL">>,
+    %% In standard mode, "-" and "_" are invalid and thus ignored.
+    %% The base64 string to be decoded is equivalent to "AB+C+D/E/FGHIJKL".
+    <<0, 31, 130, 248, 63, 196, 252, 81, 135, 32, 146, 139>> =
+        MimeDecode(Base64, standard),
+    %% In urlsafe mode, "+" and "/" are invalid and thus ignored.
+    %% The base64 string to be decoded is equivalent to "ABCDEFG-H-I_J_KL".
+    <<0, 16, 131, 16, 81, 190, 31, 226, 63, 39, 242, 139>> =
+        MimeDecode(Base64, urlsafe),
+    %% In undefined mode, "+", "/", "-" and "_" are all allowed.
+    <<0, 31, 130, 248, 63, 196, 252, 81, 190, 31, 226, 63, 39, 242, 139>> =
+        MimeDecode(Base64, undefined),
+
+    ok.
+
 %%-------------------------------------------------------------------------
 
 %% Repeat of mime_decode() tests
@@ -257,6 +287,36 @@ mime_decode_to_string(Config) when is_list(Config) ->
     "012" = MimeDecodeToString(<<"\000M\000D\000E\000y=\000">>),
     "o"   = MimeDecodeToString(<<"bw==\000">>),
     "o"   = MimeDecodeToString(<<"bw=\000=">>),
+    ok.
+
+
+%% Test base64:mime_decode_to_string/2.
+mime_decode_to_string_modes(Config) when is_list(Config) ->
+    MimeDecode = fun (In, Mode) ->
+                                Out = base64:mime_decode_to_string(In, Mode),
+                                Out = base64:mime_decode_to_string(binary_to_list(In), Mode)
+                 end,
+
+    %% The following all decode to the same data.
+    Data = [23, 234, 63, 163, 239, 129, 253, 175, 171],
+    Data = MimeDecode(<<"F+o/o++B/a+r">>, standard),
+    Data = MimeDecode(<<"F-o_o--B_a-r">>, urlsafe),
+    Data = MimeDecode(<<"F-o_o+-B/a-r">>, undefined),
+
+    %% The follwoing decode to different data depending on mode.
+    Base64 = <<"AB+C+D/E/FG-H-I_J_KL">>,
+    %% In standard mode, "-" and "_" are invalid and thus ignored.
+    %% The base64 string to be decoded is equivalent to "AB+C+D/E/FGHIJKL".
+    [0, 31, 130, 248, 63, 196, 252, 81, 135, 32, 146, 139] =
+        MimeDecode(Base64, standard),
+    %% In urlsafe mode, "+" and "/" are invalid and thus ignored.
+    %% The base64 string to be decoded is equivalent to "ABCDEFG-H-I_J_KL".
+    [0, 16, 131, 16, 81, 190, 31, 226, 63, 39, 242, 139] =
+        MimeDecode(Base64, urlsafe),
+    %% In undefined mode, "+", "/", "-" and "_" are all allowed.
+    [0, 31, 130, 248, 63, 196, 252, 81, 190, 31, 226, 63, 39, 242, 139] =
+        MimeDecode(Base64, undefined),
+
     ok.
 
 %%-------------------------------------------------------------------------
