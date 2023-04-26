@@ -109,7 +109,15 @@ new(Opts) ->
       List :: [Element],
       Set :: set(Element).
 from_list(Ls) ->
-    lists:foldl(fun (E, S) -> add_element(E, S) end, new(), Ls).
+    lists:foldl(
+         fun(E, S0) ->
+            Slot = get_slot(S0, E),
+            Bkt = get_bucket(S0, Slot),
+            S1 = update_bucket(S0, Slot, [E|Bkt]),
+            maybe_expand(S1)
+         end,
+	 new(),
+	 lists:usort(Ls)).
 
 -spec from_list(List, [{version, 1..2}]) -> Set when
       List :: [Element],
