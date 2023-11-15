@@ -1319,13 +1319,14 @@ ets:select(Table, MatchSpec),</code>
               least <c><anno>Pos</anno></c> number of elements.</p>
             <marker id="heir"></marker>
           </item>
-          <tag><c>{heir,<anno>Pid</anno>,<anno>HeirData</anno>} |
+	  <tag><c>{heir, <anno>Pid</anno>} |
+              {heir,<anno>Pid</anno>,<anno>HeirData</anno>} |
               {heir,none}</c></tag>
           <item>
             <p>Set a process as heir. The heir inherits the table if
-              the owner terminates. Message
-              <c>{'ETS-TRANSFER',tid(),FromPid,<anno>HeirData</anno>}</c> is
-              sent to the heir when that occurs. The heir must be a local
+              the owner terminates. If <c><anno>HeirData</anno></c> is given,
+              a Message <c>{'ETS-TRANSFER',tid(),FromPid,<anno>HeirData</anno>}</c>
+              is sent to the heir when that occurs. The heir must be a local
               process. Default heir is <c>none</c>, which destroys the table
               when the owner terminates.</p>
             <marker id="new_2_write_concurrency"></marker>

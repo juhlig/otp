@@ -321,7 +321,8 @@ member(_, _) ->
       Name :: atom(),
       Options :: [Option],
       Option :: Type | Access | named_table | {keypos,Pos}
-              | {heir, Pid :: pid(), HeirData} | {heir, none} | Tweaks,
+              | {heir, Pid} | {heir, Pid, HeirData} | {heir, none}
+              | Tweaks,
       Type :: table_type(),
       Access :: table_access(),
       WriteConcurrencyAlternative :: boolean() | auto,
@@ -330,6 +331,7 @@ member(_, _) ->
               | {decentralized_counters, boolean()}
               | compressed,
       Pos :: pos_integer(),
+      Pid :: pid(),
       HeirData :: term().
 
 new(_, _) ->
@@ -456,7 +458,8 @@ select_reverse(_) ->
 -spec setopts(Table, Opts) -> true when
       Table :: table(),
       Opts :: Opt | [Opt],
-      Opt :: {heir, pid(), HeirData} | {heir,none},
+      Opt :: {heir, Pid} | {heir, Pid, HeirData} | {heir,none},
+      Pid :: pid(),
       HeirData :: term().
 
 setopts(_, _) ->
