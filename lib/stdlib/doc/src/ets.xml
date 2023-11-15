@@ -95,6 +95,7 @@
       The default owner is the process that created the
       table. To transfer table ownership at process termination, use
       option <seeerl marker="#heir"><c>heir</c></seeerl> or call
+      <seemfa marker="#give_away/2"><c>give_away/2</c></seemfa> or
       <seemfa marker="#give_away/3"><c>give_away/3</c></seemfa>.</p>
 
     <p>Some implementation details:</p>
@@ -570,11 +571,13 @@ Error: fun containing local Erlang function calls
     </func>
 
     <func>
+      <name name="give_away" arity="2" since=""/>
       <name name="give_away" arity="3" since=""/>
       <fsummary>Change owner of a table.</fsummary>
       <desc>
         <p>Make process <c><anno>Pid</anno></c> the new owner of table
-          <c><anno>Table</anno></c>. If successful, message
+	<c><anno>Table</anno></c>. If successful and <c><anno>GiftData</anno></c>
+          is specified, a message
           <c>{'ETS-TRANSFER',<anno>Table</anno>,FromPid,<anno>GiftData</anno>}</c>
           is sent to the new owner.</p>
         <p>The process <c><anno>Pid</anno></c> must be alive, local, and not

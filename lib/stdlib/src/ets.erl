@@ -68,7 +68,7 @@
 %%% BIFs
 
 -export([all/0, delete/1, delete/2, delete_all_objects/1,
-         delete_object/2, first/1, give_away/3, info/1, info/2,
+         delete_object/2, first/1, give_away/2, give_away/3, info/1, info/2,
          insert/2, insert_new/2, is_compiled_ms/1, last/1, lookup/2,
          lookup_element/3, lookup_element/4, match/1, match/2, match/3, match_object/1,
          match_object/2, match_object/3, match_spec_compile/1,
@@ -145,6 +145,13 @@ delete_object(_, _) ->
       Key :: term().
 
 first(_) ->
+    erlang:nif_error(undef).
+
+-spec give_away(Table, Pid) -> true when
+      Table :: table(),
+      Pid :: pid().
+
+give_away(_, _) ->
     erlang:nif_error(undef).
 
 -spec give_away(Table, Pid, GiftData) -> true when

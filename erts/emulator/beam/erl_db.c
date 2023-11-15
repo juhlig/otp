@@ -2472,6 +2472,10 @@ BIF_RETTYPE ets_new_2(BIF_ALIST_2)
 		    heir = am_none;
 		    heir_data = am_undefined;
 		}
+		else if (tp[1] == am_heir && is_internal_pid(tp[2])) {
+			heir = tp[2];
+			heir_data = (UWord) THE_NON_VALUE;
+		}
                 else if (tp[1] == am_decentralized_counters) {
 		    if (tp[2] == am_true) {
 			is_decentralized_counters_option = 1;
@@ -2885,11 +2889,12 @@ BIF_RETTYPE ets_delete_1(BIF_ALIST_1)
 /* 
 ** BIF ets:give_away(Tab, Pid, GiftData)
 */
-BIF_RETTYPE ets_give_away_3(BIF_ALIST_3)
+static
+BIF_RETTYPE do_give_away(Process *p, Uint bif_ix, Eterm arg1, Eterm arg2, UWord arg3)
 {
     Process* to_proc = NULL;
     ErtsProcLocks to_locks = ERTS_PROC_LOCK_MAIN;
-    Eterm to_pid = BIF_ARG_2;
+    Eterm to_pid = arg2;
     Eterm from_pid;
     DbTable* tb = NULL;
     Uint freason;
@@ -2898,12 +2903,12 @@ BIF_RETTYPE ets_give_away_3(BIF_ALIST_3)
      * Note that lock of the process must be taken before the lock
      * of the table.
      */
-    to_proc = erts_pid2proc(BIF_P, ERTS_PROC_LOCK_MAIN, to_pid, to_locks);
+    to_proc = erts_pid2proc(p, ERTS_PROC_LOCK_MAIN, to_pid, to_locks);
     /*
      * If the table identifier has a problem, we want to report that even if
      * the Pid is bad.
      */
-    tb = db_get_table(BIF_P, BIF_ARG_1, DB_WRITE, LCK_WRITE, &freason);
+    tb = db_get_table(p, arg1, DB_WRITE, LCK_WRITE, &freason);
     if (!tb)
         goto fail;
 
@@ -2912,36 +2917,48 @@ BIF_RETTYPE ets_give_away_3(BIF_ALIST_3)
         goto fail;
     }
 
-    if (tb->common.owner != BIF_P->common.id) {
-	BIF_P->fvalue = EXI_NOT_OWNER;
+    if (tb->common.owner != p->common.id) {
+	p->fvalue = EXI_NOT_OWNER;
 	freason = BADARG | EXF_HAS_EXT_INFO;
 	goto fail;
     }
 
     from_pid = tb->common.owner;
     if (to_pid == from_pid) {
-	BIF_P->fvalue = EXI_OWNER;
+	p->fvalue = EXI_OWNER;
 	freason = BADARG | EXF_HAS_EXT_INFO;
 	goto fail;
     }
 
-    delete_owned_table(BIF_P, tb);
+    delete_owned_table(p, tb);
     to_proc->flags |= F_USING_DB;
     tb->common.owner = to_pid;
     save_owned_table(to_proc, tb);
 
     db_unlock(tb,LCK_WRITE);
-    send_ets_transfer_message(BIF_P, to_proc, &to_locks,
-                              tb, BIF_ARG_3);
+    if (arg3 != THE_NON_VALUE) {
+	send_ets_transfer_message(p, to_proc, &to_locks,
+                                  tb, arg3);
+    }
     erts_proc_unlock(to_proc, to_locks);
-    UnUseTmpHeap(5,BIF_P);
+    UnUseTmpHeap(5,p);
     BIF_RET(am_true);
 
  fail:
-    if (to_proc != NULL && to_proc != BIF_P) erts_proc_unlock(to_proc, to_locks);
+    if (to_proc != NULL && to_proc != p) erts_proc_unlock(to_proc, to_locks);
     if (tb != NULL) db_unlock(tb, LCK_WRITE);
 
-    return db_bif_fail(BIF_P, freason, BIF_ets_give_away_3, NULL);
+    return db_bif_fail(p, freason, bif_ix, NULL);
+}
+
+BIF_RETTYPE ets_give_away_2(BIF_ALIST_2)
+{
+    return do_give_away(BIF_P, BIF_ets_give_away_2, BIF_ARG_1, BIF_ARG_2, (UWord) THE_NON_VALUE);
+}
+
+BIF_RETTYPE ets_give_away_3(BIF_ALIST_3)
+{
+    return do_give_away(BIF_P, BIF_ets_give_away_3, BIF_ARG_1, BIF_ARG_2, BIF_ARG_3);
 }
 
 BIF_RETTYPE ets_setopts_2(BIF_ALIST_2)
